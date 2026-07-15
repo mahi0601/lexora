@@ -26,14 +26,22 @@ export const useSearchStore = create<SearchState>((set, get) => ({
 
   search: async (query, categoryHint) => {
     set({ loading: true, error: null, query });
-    const response = await searchWord(
-      query,
-      categoryHint ?? get().categoryHint ?? undefined
-    );
-    if (response.ok) {
-      set({ result: response.result, loading: false, error: null });
-    } else {
-      set({ result: null, loading: false, error: response.error });
+    try {
+      const response = await searchWord(
+        query,
+        categoryHint ?? get().categoryHint ?? undefined
+      );
+      if (response.ok) {
+        set({ result: response.result, loading: false, error: null });
+      } else {
+        set({ result: null, loading: false, error: response.error });
+      }
+    } catch {
+      set({
+        result: null,
+        loading: false,
+        error: "Something went wrong finding a word for that. Please try again.",
+      });
     }
   },
 

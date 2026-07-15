@@ -39,7 +39,9 @@ export async function searchWord(
     if (err instanceof RateLimitError) {
       return { ok: false, error: err.message };
     }
-    throw err;
+    // Rate-limit check depends on the DB; a DB hiccup here shouldn't block
+    // the search itself, so log and fail open instead of throwing.
+    console.error("checkRateLimit failed, failing open:", err);
   }
 
   try {
