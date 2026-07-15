@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Small, generic preference bucket only — NOT for streak/XP/gamification data.
+  // Phase 2/3 add those as new nullable columns on User (scalars) or new child
+  // tables (anything with its own history: achievements, activity heatmap cells,
+  // leaderboard snapshots, challenge attempts) — never crammed in here.
+  settings Json?
+
+  savedWords  SavedWord[]
+  collections Collection[]
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+
+  savedWords SavedWord[]
+
+  @@unique([userId, name])
+}
+
+model SavedWord {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  word String
+
+  // Full AI-generated payload (IPA, etymology, examples, synonyms, etc.) —
+  // kept as JSON so the evolving AI response shape doesn't force a migration
+  // every time a field is added. See lib/ai/schema.ts for the shape.
+  data Json
+
+  // Hoisted copies of a few JSON fields, ONLY for indexed filter/sort —
+  // Postgres can't efficiently filter/sort on nested JSON without extra indexing.
+  // These are AI-estimated, not certified corpus data.
+  difficulty   String?
+  cefrLevel    String?
+  partOfSpeech String?
+
+  notes       String?  @db.Text
+  tags        String[] @default([])
+  isFavorite  Boolean  @default(false)
+  reviewLater Boolean  @default(false)
+
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, word])
+  @@index([userId, isFavorite])
+  @@index([userId, reviewLater])
+  @@index([userId, createdAt])
+}
+
+model WordOfDay {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  word      String
+  data      Json
+  createdAt DateTime @default(now())
+}
+
+// Minimal public/anonymous-friendly search log. Not surfaced in the UI in
+// Phase 1 — exists now so Phase 3 "trending" doesn't need a migration, and
+// doubles as the source for today's anonymous rate-limiting.
+model SearchQuery {
+  id         String   @id @default(cuid())
+  userId     String?
+  ip         String?
+  queryText  String
+  resultWord String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+}
