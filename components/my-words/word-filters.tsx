@@ -71,7 +71,7 @@ export function WordFilters() {
         onClick={toggleOnlyFavorites}
         className={cn(onlyFavorites && "bg-accent text-accent-foreground")}
       >
-        <Star className="mr-1.5 size-4" fill={onlyFavorites ? "currentColor" : "none"} />
+        <Star className="mr-2 size-4" fill={onlyFavorites ? "currentColor" : "none"} />
         Favorites
       </Button>
 
@@ -83,7 +83,7 @@ export function WordFilters() {
         onClick={toggleOnlyReviewLater}
         className={cn(onlyReviewLater && "bg-accent text-accent-foreground")}
       >
-        <Clock className="mr-1.5 size-4" />
+        <Clock className="mr-2 size-4" />
         Review later
       </Button>
 

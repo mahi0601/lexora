@@ -16,8 +16,9 @@ export function WordOfDayCard() {
 
   return (
     <section
+      id="word-of-day"
       aria-label="Word of the day"
-      className="glass mx-auto w-full max-w-2xl rounded-card p-6 shadow-lg"
+      className="mx-auto w-full max-w-2xl rounded-lg border border-border bg-card p-6 shadow-sm"
     >
       <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
         <Sparkles className="size-4 text-primary" aria-hidden="true" />
@@ -33,9 +34,6 @@ export function WordOfDayCard() {
       ) : (
         <>
           <div className="flex items-baseline gap-2">
-            <span aria-hidden="true" className="text-2xl">
-              {word.emoji}
-            </span>
             <h3 className="text-2xl font-semibold">{word.word}</h3>
             <Badge>{word.cefrLevel}</Badge>
           </div>

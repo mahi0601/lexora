@@ -23,13 +23,13 @@ export function AlternatesList({
               <button
                 type="button"
                 onClick={() => onSelect?.(alt.word)}
-                className="glass flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
+                className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors duration-150 hover:bg-muted"
               >
                 <span className="font-medium">{alt.word}</span>
                 <span className="ml-auto shrink-0 text-sm text-muted-foreground">
                   {alt.confidencePercent}%
                 </span>
-                <span className="hidden max-w-[16rem] truncate text-sm text-muted-foreground md:inline">
+                <span className="hidden max-w-[16rem] truncate text-sm text-subtle-foreground md:inline">
                   {alt.reason}
                 </span>
               </button>

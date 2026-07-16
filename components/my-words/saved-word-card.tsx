@@ -73,11 +73,10 @@ export function SavedWordCard({ word }: { word: SavedWordRow }) {
   }
 
   return (
-    <div className="glass flex flex-col gap-3 rounded-card p-5">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-5">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-baseline gap-2">
-            <span aria-hidden="true">{data.emoji}</span>
             <h3 className="text-lg font-semibold">{word.word}</h3>
           </div>
           <p className="text-sm text-muted-foreground">{data.definition}</p>
@@ -112,7 +111,7 @@ export function SavedWordCard({ word }: { word: SavedWordRow }) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         {word.difficulty && <Badge variant="outline">{word.difficulty}</Badge>}
         {word.cefrLevel && <Badge variant="outline">{word.cefrLevel}</Badge>}
         {tags.map((tag) => (

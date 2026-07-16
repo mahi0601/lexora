@@ -13,7 +13,7 @@ export function SearchResults() {
   return (
     <div className="px-4 py-6" aria-live="polite">
       {loading && (
-        <div className="glass mx-auto flex w-full max-w-2xl flex-col gap-3 rounded-card p-6">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 rounded-lg border border-border bg-card p-6">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />
@@ -24,7 +24,7 @@ export function SearchResults() {
       {!loading && error && (
         <div
           role="alert"
-          className="glass mx-auto w-full max-w-2xl rounded-card p-6 text-center text-muted-foreground"
+          className="mx-auto w-full max-w-2xl rounded-lg border border-border bg-card p-6 text-center text-muted-foreground"
         >
           {error}
         </div>

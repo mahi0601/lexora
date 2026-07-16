@@ -1,57 +1,71 @@
 "use client";
 
-import { motion } from "framer-motion";
+import {
+  Heart,
+  BookOpen,
+  Brain,
+  Briefcase,
+  Laptop,
+  Scale,
+  Leaf,
+  Stethoscope,
+  Plane,
+  GraduationCap,
+  Music,
+  Puzzle,
+  Sparkles,
+  MessageCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { useSearchStore } from "@/store/useSearchStore";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = [
-  { emoji: "❤️", name: "Emotions" },
-  { emoji: "📚", name: "Literature" },
-  { emoji: "🧠", name: "Psychology" },
-  { emoji: "💼", name: "Business" },
-  { emoji: "💻", name: "Technology" },
-  { emoji: "⚖️", name: "Law" },
-  { emoji: "🌿", name: "Nature" },
-  { emoji: "🏥", name: "Medical" },
-  { emoji: "✈️", name: "Travel" },
-  { emoji: "🎓", name: "Academic" },
-  { emoji: "🎵", name: "Music" },
-  { emoji: "🧩", name: "Idioms" },
-  { emoji: "✨", name: "Rare Words" },
-  { emoji: "😎", name: "Slang" },
+const CATEGORIES: { icon: LucideIcon; name: string }[] = [
+  { icon: Heart, name: "Emotions" },
+  { icon: BookOpen, name: "Literature" },
+  { icon: Brain, name: "Psychology" },
+  { icon: Briefcase, name: "Business" },
+  { icon: Laptop, name: "Technology" },
+  { icon: Scale, name: "Law" },
+  { icon: Leaf, name: "Nature" },
+  { icon: Stethoscope, name: "Medical" },
+  { icon: Plane, name: "Travel" },
+  { icon: GraduationCap, name: "Academic" },
+  { icon: Music, name: "Music" },
+  { icon: Puzzle, name: "Idioms" },
+  { icon: Sparkles, name: "Rare Words" },
+  { icon: MessageCircle, name: "Slang" },
 ];
 
 export function CategoryCards() {
   const { categoryHint, setCategoryHint } = useSearchStore();
 
   return (
-    <section aria-label="Browse by category" className="px-4 py-10">
+    <section id="categories" aria-label="Browse by category" className="px-4 py-8">
       <h2 className="mb-4 text-center text-sm font-medium text-muted-foreground">
         Or browse by category
       </h2>
-      <ul className="mx-auto flex max-w-4xl flex-wrap justify-center gap-2.5">
+      <ul className="mx-auto flex max-w-4xl flex-wrap justify-center gap-2">
         {CATEGORIES.map((category) => {
           const active = categoryHint === category.name;
           return (
             <li key={category.name}>
-              <motion.button
+              <button
                 type="button"
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
                 onClick={() =>
                   setCategoryHint(active ? null : category.name)
                 }
                 aria-pressed={active}
                 className={cn(
-                  "glass flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   active
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border bg-transparent text-foreground hover:bg-muted"
                 )}
               >
-                <span aria-hidden="true">{category.emoji}</span>
+                <category.icon className="size-4" aria-hidden="true" />
                 {category.name}
-              </motion.button>
+              </button>
             </li>
           );
         })}
