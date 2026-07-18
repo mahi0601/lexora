@@ -2,6 +2,7 @@
 
 import { requireLocalUser } from "@/lib/getOrCreateUser";
 import { prisma } from "@/lib/prisma";
+import { syncAchievements } from "@/actions/achievements";
 import type { WordResult } from "@/lib/ai/schema";
 
 export type SortOption = "recent" | "favorite" | "difficulty" | "alphabetical";
@@ -37,6 +38,110 @@ export async function saveWord(
       partOfSpeech: result.partOfSpeech[0],
     },
   });
+
+  await syncAchievements(user.id).catch(() => {});
+
+  return { ok: true as const, id: saved.id };
+}
+
+/**
+ * Favorite toggle straight from a search result — saves the word if it
+ * isn't already saved (mirrors the reference app's heart icon sitting
+ * directly on the discovery card, not just on already-saved words).
+ */
+export async function toggleFavoriteFromResult(result: WordResult) {
+  const user = await requireLocalUser();
+
+  const existing = await prisma.savedWord.findUnique({
+    where: { userId_word: { userId: user.id, word: result.word } },
+  });
+
+  if (existing) {
+    const updated = await prisma.savedWord.update({
+      where: { id: existing.id },
+      data: { isFavorite: !existing.isFavorite },
+    });
+    return { ok: true as const, isFavorite: updated.isFavorite };
+  }
+
+  const created = await prisma.savedWord.create({
+    data: {
+      userId: user.id,
+      word: result.word,
+      data: result,
+      difficulty: result.difficultyLevel,
+      cefrLevel: result.cefrLevel,
+      partOfSpeech: result.partOfSpeech[0],
+      isFavorite: true,
+    },
+  });
+  await syncAchievements(user.id).catch(() => {});
+
+  return { ok: true as const, isFavorite: created.isFavorite };
+}
+
+/**
+ * "Your own words" — a personal word + your own definition, no AI lookup.
+ * Fields the AI would normally supply (etymology, examples, synonyms...)
+ * are left empty rather than fabricated.
+ */
+export async function addCustomWord(input: {
+  word: string;
+  definition: string;
+  partOfSpeech?: string;
+}) {
+  const user = await requireLocalUser();
+  const word = input.word.trim();
+  const definition = input.definition.trim();
+  if (!word || !definition) {
+    return { ok: false as const, error: "Word and definition are required." };
+  }
+
+  const data: WordResult = {
+    word,
+    pronunciation: "",
+    ipa: "",
+    partOfSpeech: input.partOfSpeech?.trim() ? [input.partOfSpeech.trim()] : ["custom"],
+    definition,
+    extendedExplanation: "",
+    difficultyLevel: "intermediate",
+    cefrLevel: "B1",
+    frequency: "common",
+    originEtymology: "",
+    commonContexts: [],
+    formalityNote: "",
+    regionalNote: "",
+    exampleSentences: [],
+    synonyms: [],
+    antonyms: [],
+    relatedWords: [],
+    similarExpressions: [],
+    emoji: "",
+    matchExplanation: "Added manually.",
+    alternates: [],
+    aiGenerated: true,
+    modelUsed: "custom",
+    generatedAt: new Date().toISOString(),
+  };
+
+  const saved = await prisma.savedWord.upsert({
+    where: { userId_word: { userId: user.id, word } },
+    create: {
+      userId: user.id,
+      word,
+      data,
+      difficulty: data.difficultyLevel,
+      cefrLevel: data.cefrLevel,
+      partOfSpeech: data.partOfSpeech[0],
+      isCustom: true,
+    },
+    update: {
+      data,
+      isCustom: true,
+    },
+  });
+
+  await syncAchievements(user.id).catch(() => {});
 
   return { ok: true as const, id: saved.id };
 }
@@ -82,6 +187,7 @@ export async function listWords(params?: {
   sort?: SortOption;
   onlyFavorites?: boolean;
   onlyReviewLater?: boolean;
+  onlyCustom?: boolean;
   collectionId?: string;
 }) {
   const user = await requireLocalUser();
@@ -94,6 +200,7 @@ export async function listWords(params?: {
         : {}),
       ...(params?.onlyFavorites ? { isFavorite: true } : {}),
       ...(params?.onlyReviewLater ? { reviewLater: true } : {}),
+      ...(params?.onlyCustom ? { isCustom: true } : {}),
       ...(params?.collectionId ? { collectionId: params.collectionId } : {}),
     },
     include: { collection: true },
@@ -144,9 +251,24 @@ function csvEscape(value: string): string {
 }
 
 export async function exportWords(
-  format: "markdown" | "json" | "csv"
+  format: "markdown" | "json" | "csv" | "anki"
 ): Promise<{ ok: true; content: string; filename: string } | { ok: false; error: string }> {
   const words = await listWords({ sort: "alphabetical" });
+
+  if (format === "anki") {
+    // Anki's plain-text importer expects tab-separated Front/Back columns;
+    // tabs/newlines inside a field would be misread as a column/row break.
+    const sanitize = (s: string) => s.replace(/\t/g, " ").replace(/\r?\n/g, " ");
+    const lines = words.map((w) => {
+      const data = w.data as unknown as WordResult;
+      return `${sanitize(w.word)}\t${sanitize(data.definition ?? "")}`;
+    });
+    return {
+      ok: true,
+      content: lines.join("\n"),
+      filename: "lexora-anki-import.txt",
+    };
+  }
 
   if (format === "json") {
     return {

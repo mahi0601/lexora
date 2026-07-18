@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/branding/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   Sheet,
   SheetContent,
@@ -15,10 +17,9 @@ import {
 
 const NAV_ITEMS = [
   { href: "/#search", label: "Search" },
-  { href: "/#word-of-day", label: "Word of the Day" },
-  { href: "/#categories", label: "Categories" },
   { href: "/favorites", label: "Favorites" },
-  { href: "/settings", label: "Settings" },
+  { href: "/practice", label: "Practice" },
+  { href: "/progress", label: "Progress" },
 ];
 
 function NavLink({
@@ -55,50 +56,55 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
         <Link
           href="/"
-          className="text-base font-semibold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          Lexora
+          <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              active={item.href === pathname}
-            />
-          ))}
-        </nav>
+        <div className="hidden items-center gap-6 md:flex">
+          <nav className="flex items-center gap-6">
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                active={item.href === pathname}
+              />
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
 
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            aria-label="Open menu"
-            onClick={() => setMobileOpen(true)}
-          >
-            <Menu className="size-5" aria-hidden="true" />
-          </Button>
-          <SheetContent side="right">
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-            </SheetHeader>
-            <nav className="flex flex-col gap-1 px-4">
-              {NAV_ITEMS.map((item) => (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  active={item.href === pathname}
-                  onNavigate={() => setMobileOpen(false)}
-                />
-              ))}
-            </nav>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center gap-3 md:hidden">
+          <ThemeToggle />
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Open menu"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </Button>
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 px-4">
+                {NAV_ITEMS.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    active={item.href === pathname}
+                    onNavigate={() => setMobileOpen(false)}
+                  />
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

@@ -20,14 +20,15 @@ function downloadFile(content: string, filename: string, mime: string) {
   URL.revokeObjectURL(url);
 }
 
-const MIME: Record<"markdown" | "json" | "csv", string> = {
+const MIME: Record<"markdown" | "json" | "csv" | "anki", string> = {
   markdown: "text/markdown",
   json: "application/json",
   csv: "text/csv",
+  anki: "text/plain",
 };
 
 export function ExportMenu() {
-  async function handleExport(format: "markdown" | "json" | "csv") {
+  async function handleExport(format: "markdown" | "json" | "csv" | "anki") {
     const res = await exportWords(format);
     if (res.ok) {
       downloadFile(res.content, res.filename, MIME[format]);
@@ -53,6 +54,9 @@ export function ExportMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport("csv")}>
           CSV (.csv)
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleExport("anki")}>
+          Anki import (.txt)
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

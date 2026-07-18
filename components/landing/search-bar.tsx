@@ -1,35 +1,21 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { Search, Loader2, X } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/store/useSearchStore";
 
 export function SearchBar() {
-  const { query, setQuery, search, loading, categoryHint, setCategoryHint } =
-    useSearchStore();
+  const { query, setQuery, search, loading } = useSearchStore();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!query.trim() || loading) return;
-    void search(query, categoryHint ?? undefined);
+    void search(query);
   }
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2">
-      {categoryHint && (
-        <span className="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-sm text-muted-foreground">
-          Searching in <strong className="text-foreground">{categoryHint}</strong>
-          <button
-            type="button"
-            onClick={() => setCategoryHint(null)}
-            aria-label={`Clear ${categoryHint} category filter`}
-            className="rounded-full p-1 hover:bg-background"
-          >
-            <X className="size-3.5" aria-hidden="true" />
-          </button>
-        </span>
-      )}
       <form
         onSubmit={handleSubmit}
         className="flex w-full items-center gap-2 rounded-lg border border-border bg-card p-2 shadow-sm"

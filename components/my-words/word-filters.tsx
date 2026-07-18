@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Star, Clock } from "lucide-react";
+import { Search, Star, Clock, PenLine } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,8 @@ export function WordFilters() {
     toggleOnlyFavorites,
     onlyReviewLater,
     toggleOnlyReviewLater,
+    onlyCustom,
+    toggleOnlyCustom,
   } = useMyWordsStore();
 
   return (
@@ -85,6 +87,18 @@ export function WordFilters() {
       >
         <Clock className="mr-2 size-4" />
         Review later
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        aria-pressed={onlyCustom}
+        onClick={toggleOnlyCustom}
+        className={cn(onlyCustom && "bg-accent text-accent-foreground")}
+      >
+        <PenLine className="mr-2 size-4" />
+        Your words
       </Button>
 
       <ExportMenu />

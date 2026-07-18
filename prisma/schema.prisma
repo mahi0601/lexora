@@ -22,8 +22,17 @@ model User {
   // leaderboard snapshots, challenge attempts) — never crammed in here.
   settings Json?
 
-  savedWords  SavedWord[]
-  collections Collection[]
+  // Daily review streak (Phase 2). A day only counts once `lastReviewedAt`
+  // moves forward, regardless of how many words are reviewed that day.
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastReviewedAt DateTime? @db.Date
+
+  savedWords        SavedWord[]
+  collections       Collection[]
+  reviewLogs        ReviewLog[]
+  achievements      UserAchievement[]
+  challengeAttempts DailyChallengeAttempt[]
 }
 
 model Collection {
@@ -32,6 +41,10 @@ model Collection {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   createdAt DateTime @default(now())
+
+  // Set when the owner turns on sharing; a public read-only page looks
+  // saved words up by this token, never by collection id directly.
+  shareToken String? @unique
 
   savedWords SavedWord[]
 
@@ -62,8 +75,21 @@ model SavedWord {
   isFavorite  Boolean  @default(false)
   reviewLater Boolean  @default(false)
 
+  // True for words added by hand via "Your own words" (word + your own
+  // definition, no AI lookup) — distinguishes them from AI-discovered words
+  // for filtering, same distinction the reference app's category makes.
+  isCustom Boolean @default(false)
+
+  // Spaced-repetition state (Phase 2). `srsLevel` indexes into the interval
+  // ladder in actions/review.ts; a freshly saved word is due immediately so
+  // it shows up in the first review session rather than waiting untested.
+  srsLevel     Int      @default(0)
+  nextReviewAt DateTime @default(now())
+
   collectionId String?
   collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  reviewLogs ReviewLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,6 +98,44 @@ model SavedWord {
   @@index([userId, isFavorite])
   @@index([userId, reviewLater])
   @@index([userId, createdAt])
+  @@index([userId, nextReviewAt])
+}
+
+// One row per review answer. This is the source of truth for the activity
+// heatmap and review counts — streaks still read User.lastReviewedAt directly
+// since that only needs "did today already count," not full history.
+model ReviewLog {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedWordId String
+  savedWord   SavedWord @relation(fields: [savedWordId], references: [id], onDelete: Cascade)
+  remembered  Boolean
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Unlocked badges. `key` matches an entry in lib/achievements.ts; unlock
+// conditions are evaluated in code from existing stats, not stored here.
+model UserAchievement {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key        String
+  unlockedAt DateTime @default(now())
+
+  @@unique([userId, key])
+}
+
+// Cached curated word list per category slug — generated once via AI and
+// reused after that, so browsing a category doesn't re-trigger a costly AI
+// call on every visit. Public data, not scoped to a user.
+model CategoryWordList {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  words     Json
+  createdAt DateTime @default(now())
 }
 
 model WordOfDay {
@@ -80,6 +144,21 @@ model WordOfDay {
   word      String
   data      Json
   createdAt DateTime @default(now())
+}
+
+// One row per user per day the daily discovery challenge was solved. Exists
+// so a signed-in visitor sees "already solved" on reload, and so streaks
+// (bumpDailyStreak) and achievements have something concrete to trigger off
+// of even for brand-new users with zero saved words.
+model DailyChallengeAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  solved    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
 }
 
 // Minimal public/anonymous-friendly search log. Not surfaced in the UI in

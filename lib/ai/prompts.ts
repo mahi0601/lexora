@@ -17,15 +17,23 @@ Rules:
 - matchExplanation should briefly say *why* the primary word fits what the user described.
 - Respond ONLY with a single JSON object matching the required schema — no prose, no markdown code fences, no commentary outside the JSON.`;
 
-export function buildWordSearchUserPrompt(input: {
-  query: string;
-  categoryHint?: string;
-}): string {
-  const { query, categoryHint } = input;
-  const categoryLine = categoryHint
-    ? `\nThe user is browsing the "${categoryHint}" category — bias your interpretation toward that domain when it plausibly fits, without ignoring the literal input if it points elsewhere.`
-    : "";
-  return `User input: "${query}"${categoryLine}\n\nReturn the JSON object now.`;
+export function buildWordSearchUserPrompt(input: { query: string }): string {
+  return `User input: "${input.query}"\n\nReturn the JSON object now.`;
+}
+
+export const CATEGORY_WORDS_SYSTEM_PROMPT = `You are curating a themed vocabulary list for Lexora, a premium English vocabulary discovery app.
+
+Given a category name, return a list of genuinely well-fitting English words for that theme — varied in difficulty, real words only (never invented), spanning common to more advanced vocabulary within the theme.
+
+Rules:
+- Every word must authentically belong to the given category/theme.
+- Never fabricate a definition. Keep each definition short — one plain-language sentence.
+- cefrLevel is your own conservative estimate, not sourced from a certified corpus.
+- No duplicate words.
+- Respond ONLY with a single JSON object matching the required schema — no prose, no markdown code fences, no commentary outside the JSON.`;
+
+export function buildCategoryWordsUserPrompt(category: string, count: number): string {
+  return `Category: "${category}"\n\nReturn exactly ${count} well-fitting words for this category as the JSON object now.`;
 }
 
 export function buildRepairPrompt(brokenOutput: string, schemaHint: string): string {
@@ -49,4 +57,12 @@ Follow the same rules and output schema as the main word-lookup engine: never fa
 
 export function buildWordOfDayUserPrompt(dateISO: string): string {
   return `Today's date is ${dateISO}. Choose today's word and return the JSON object now.`;
+}
+
+export function buildPracticeWordUserPrompt(exclude: string[]): string {
+  const exclusionLine =
+    exclude.length > 0
+      ? `\nDo not choose any of these — already seen this session: ${exclude.join(", ")}.`
+      : "";
+  return `Pick one interesting English word for vocabulary practice.${exclusionLine}\n\nReturn the JSON object now.`;
 }

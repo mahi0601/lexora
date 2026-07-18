@@ -10,11 +10,9 @@ interface SearchState {
   result: WordResult | null;
   loading: boolean;
   error: string | null;
-  categoryHint: string | null;
   recentSearches: string[];
   setQuery: (query: string) => void;
-  setCategoryHint: (categoryHint: string | null) => void;
-  search: (query: string, categoryHint?: string) => Promise<void>;
+  search: (query: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -25,19 +23,14 @@ export const useSearchStore = create<SearchState>()(
       result: null,
       loading: false,
       error: null,
-      categoryHint: null,
       recentSearches: [],
 
       setQuery: (query) => set({ query }),
-      setCategoryHint: (categoryHint) => set({ categoryHint }),
 
-      search: async (query, categoryHint) => {
+      search: async (query) => {
         set({ loading: true, error: null, query });
         try {
-          const response = await searchWord(
-            query,
-            categoryHint ?? get().categoryHint ?? undefined
-          );
+          const response = await searchWord(query);
           if (response.ok) {
             const trimmed = query.trim();
             const recentSearches = [

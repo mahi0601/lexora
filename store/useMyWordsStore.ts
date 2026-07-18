@@ -16,11 +16,13 @@ interface MyWordsState {
   sort: SortOption;
   onlyFavorites: boolean;
   onlyReviewLater: boolean;
+  onlyCustom: boolean;
   collectionId: string | null;
   setSearch: (search: string) => void;
   setSort: (sort: SortOption) => void;
   toggleOnlyFavorites: () => void;
   toggleOnlyReviewLater: () => void;
+  toggleOnlyCustom: () => void;
   setCollectionId: (collectionId: string | null) => void;
   refresh: () => Promise<void>;
   refreshCollections: () => Promise<void>;
@@ -34,6 +36,7 @@ export const useMyWordsStore = create<MyWordsState>((set, get) => ({
   sort: "recent",
   onlyFavorites: false,
   onlyReviewLater: false,
+  onlyCustom: false,
   collectionId: null,
 
   setSearch: (search) => {
@@ -52,13 +55,17 @@ export const useMyWordsStore = create<MyWordsState>((set, get) => ({
     set((s) => ({ onlyReviewLater: !s.onlyReviewLater }));
     void get().refresh();
   },
+  toggleOnlyCustom: () => {
+    set((s) => ({ onlyCustom: !s.onlyCustom }));
+    void get().refresh();
+  },
   setCollectionId: (collectionId) => {
     set({ collectionId });
     void get().refresh();
   },
 
   refresh: async () => {
-    const { search, sort, onlyFavorites, onlyReviewLater, collectionId } =
+    const { search, sort, onlyFavorites, onlyReviewLater, onlyCustom, collectionId } =
       get();
     set({ loading: true });
     const words = await listWords({
@@ -66,6 +73,7 @@ export const useMyWordsStore = create<MyWordsState>((set, get) => ({
       sort,
       onlyFavorites,
       onlyReviewLater,
+      onlyCustom,
       collectionId: collectionId ?? undefined,
     });
     set({ words, loading: false });

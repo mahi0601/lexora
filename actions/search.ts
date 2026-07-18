@@ -17,10 +17,7 @@ async function getClientIp(): Promise<string | null> {
   return h.get("x-real-ip");
 }
 
-export async function searchWord(
-  query: string,
-  categoryHint?: string
-): Promise<SearchWordResult> {
+export async function searchWord(query: string): Promise<SearchWordResult> {
   const trimmed = query.trim();
   if (!trimmed) {
     return { ok: false, error: "Type something to search for a word." };
@@ -45,10 +42,7 @@ export async function searchWord(
   }
 
   try {
-    const result = await generateWordResult({
-      query: trimmed,
-      categoryHint,
-    });
+    const result = await generateWordResult({ query: trimmed });
 
     // Best-effort logging — never block the user's result on this.
     prisma.searchQuery

@@ -46,7 +46,7 @@ export function ResultCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-baseline gap-2">
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="font-heading text-3xl font-semibold tracking-tight">
               {result.word}
             </h2>
           </div>

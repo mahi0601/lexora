@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { updateWord, deleteWord, listWords } from "@/actions/words";
 import { useMyWordsStore } from "@/store/useMyWordsStore";
+import { MasteryMeter } from "@/components/my-words/mastery-meter";
 import type { WordResult } from "@/lib/ai/schema";
 
 type SavedWordRow = Awaited<ReturnType<typeof listWords>>[number];
@@ -77,9 +78,12 @@ export function SavedWordCard({ word }: { word: SavedWordRow }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-lg font-semibold">{word.word}</h3>
+            <h3 className="font-heading text-lg font-semibold">{word.word}</h3>
           </div>
           <p className="text-sm text-muted-foreground">{data.definition}</p>
+          <div className="mt-1.5">
+            <MasteryMeter srsLevel={word.srsLevel} />
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Button
@@ -112,6 +116,7 @@ export function SavedWordCard({ word }: { word: SavedWordRow }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {word.isCustom && <Badge variant="secondary">Your word</Badge>}
         {word.difficulty && <Badge variant="outline">{word.difficulty}</Badge>}
         {word.cefrLevel && <Badge variant="outline">{word.cefrLevel}</Badge>}
         {tags.map((tag) => (

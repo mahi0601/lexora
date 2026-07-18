@@ -67,6 +67,26 @@ export type WordResultContent = z.infer<typeof WordResultContentSchema>;
 export type WordResult = z.infer<typeof WordResultSchema>;
 export type AlternateWord = z.infer<typeof AlternateWordSchema>;
 
+export const CategoryWordEntrySchema = z.object({
+  word: z.string(),
+  partOfSpeech: z.array(z.string()).min(1),
+  definition: z.string(),
+  cefrLevel: CefrLevel,
+});
+
+export const CategoryWordListContentSchema = z.object({
+  words: z.array(CategoryWordEntrySchema).min(1),
+});
+
+export type CategoryWordEntry = z.infer<typeof CategoryWordEntrySchema>;
+
+export function describeCategorySchemaForRepair(): string {
+  return `{
+  words: { word: string, partOfSpeech: string[], definition: string,
+  cefrLevel: "A1"|"A2"|"B1"|"B2"|"C1"|"C2" }[]
+}`;
+}
+
 export function describeSchemaForRepair(): string {
   return `{
   word: string, pronunciation: string, ipa: string, partOfSpeech: string[],

@@ -9,7 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-serif: var(--font-fraunces);
+  --font-heading: var(--font-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -45,92 +46,96 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* One consistent 12px-based radius system — rounded-full (native) covers
-     genuinely circular controls; nothing else in the app goes above 12px. */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.625rem;
+  /* Rounder system to match the reference app's pill buttons and soft
+     cards — rounded-full (native) still covers circular controls. */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
   --radius-lg: var(--radius);
 }
 
 :root {
-  --background: #f8f7f4;
-  --foreground: #1f2937;
+  /* "Cream, Teal & Coral" — matched to actual screenshots of the reference
+     app (Vocabulary - Learn words daily): warm parchment background, dusty
+     sage teal as primary, coral as the energetic accent for daily/practice
+     moments. Editorial serif for headings and word displays. */
+  --background: #f1ecdf;
+  --foreground: #191510;
   --card: #ffffff;
-  --card-foreground: #1f2937;
+  --card-foreground: #191510;
   --popover: #ffffff;
-  --popover-foreground: #1f2937;
-  --primary: #5b6ef5;
-  --primary-hover: #4355e8;
+  --popover-foreground: #191510;
+  --primary: #4f918d;
+  --primary-hover: #3f7d79;
   --primary-foreground: #ffffff;
-  --secondary: #f1f3f5;
-  --secondary-foreground: #1f2937;
-  --muted: #f1f3f5;
-  --muted-foreground: #6b7280;
-  --subtle-foreground: #9ca3af;
-  --accent: #eef0fe;
-  --accent-foreground: #33409e;
-  --destructive: #dc2626;
-  --success: #22c55e;
+  --secondary: #e8e2d2;
+  --secondary-foreground: #191510;
+  --muted: #e8e2d2;
+  --muted-foreground: #6b6154;
+  --subtle-foreground: #9c9280;
+  --accent: #fbe4dc;
+  --accent-foreground: #c1503a;
+  --destructive: #d64545;
+  --success: #5fa85c;
   --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #5b6ef5;
-  --chart-1: #5b6ef5;
-  --chart-2: #6b7280;
-  --chart-3: #9ca3af;
-  --chart-4: #d1d5db;
-  --chart-5: #1f2937;
-  --radius: 0.75rem;
-  --sidebar: #f8f7f4;
-  --sidebar-foreground: #1f2937;
-  --sidebar-primary: #5b6ef5;
+  --warning: #e8a33d;
+  --warning-foreground: #191510;
+  --border: #ded5c0;
+  --input: #ded5c0;
+  --ring: #4f918d;
+  --chart-1: #4f918d;
+  --chart-2: #e8836f;
+  --chart-3: #8fbbb8;
+  --chart-4: #5fa85c;
+  --chart-5: #e8a33d;
+  --radius: 1.25rem;
+  --sidebar: #f1ecdf;
+  --sidebar-foreground: #191510;
+  --sidebar-primary: #4f918d;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f3f5;
-  --sidebar-accent-foreground: #1f2937;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #5b6ef5;
+  --sidebar-accent: #e8e2d2;
+  --sidebar-accent-foreground: #191510;
+  --sidebar-border: #ded5c0;
+  --sidebar-ring: #4f918d;
 }
 
 .dark {
-  --background: #1c1b1a;
-  --foreground: #f5f4f1;
-  --card: #242322;
-  --card-foreground: #f5f4f1;
-  --popover: #242322;
-  --popover-foreground: #f5f4f1;
-  --primary: #7c89f7;
-  --primary-hover: #6572e0;
-  --primary-foreground: #1c1b1a;
-  --secondary: #2c2b29;
-  --secondary-foreground: #f5f4f1;
-  --muted: #2c2b29;
-  --muted-foreground: #a8a29e;
-  --subtle-foreground: #7c7873;
-  --accent: #2a2e4a;
-  --accent-foreground: #c7cdfb;
-  --destructive: #ef4444;
-  --success: #34d399;
-  --success-foreground: #1c1b1a;
-  --warning: #fbbf24;
-  --warning-foreground: #1c1b1a;
-  --border: #38362f;
-  --input: #38362f;
-  --ring: #7c89f7;
-  --chart-1: #7c89f7;
-  --chart-2: #a8a29e;
-  --chart-3: #7c7873;
-  --chart-4: #4a4844;
-  --chart-5: #f5f4f1;
-  --sidebar: #1c1b1a;
-  --sidebar-foreground: #f5f4f1;
-  --sidebar-primary: #7c89f7;
-  --sidebar-primary-foreground: #1c1b1a;
-  --sidebar-accent: #2c2b29;
-  --sidebar-accent-foreground: #f5f4f1;
-  --sidebar-border: #38362f;
-  --sidebar-ring: #7c89f7;
+  --background: #1c1814;
+  --foreground: #f5f0e6;
+  --card: #262019;
+  --card-foreground: #f5f0e6;
+  --popover: #262019;
+  --popover-foreground: #f5f0e6;
+  --primary: #7fc2be;
+  --primary-hover: #98d0cc;
+  --primary-foreground: #1c1814;
+  --secondary: #2e271e;
+  --secondary-foreground: #f5f0e6;
+  --muted: #2e271e;
+  --muted-foreground: #c9bfae;
+  --subtle-foreground: #8a8072;
+  --accent: #3a2420;
+  --accent-foreground: #f2967e;
+  --destructive: #e8807c;
+  --success: #7fc17c;
+  --success-foreground: #1c1814;
+  --warning: #f2b968;
+  --warning-foreground: #1c1814;
+  --border: #3a3226;
+  --input: #3a3226;
+  --ring: #7fc2be;
+  --chart-1: #7fc2be;
+  --chart-2: #f2967e;
+  --chart-3: #a8cfcc;
+  --chart-4: #7fc17c;
+  --chart-5: #f2b968;
+  --sidebar: #1c1814;
+  --sidebar-foreground: #f5f0e6;
+  --sidebar-primary: #7fc2be;
+  --sidebar-primary-foreground: #1c1814;
+  --sidebar-accent: #2e271e;
+  --sidebar-accent-foreground: #f5f0e6;
+  --sidebar-border: #3a3226;
+  --sidebar-ring: #7fc2be;
 }
 
 @layer base {

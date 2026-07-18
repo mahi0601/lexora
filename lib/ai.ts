@@ -1,15 +1,22 @@
+import type { z } from "zod";
 import * as groq from "@/lib/ai/providers/groq";
 import {
   WordResultContentSchema,
   describeSchemaForRepair,
+  CategoryWordListContentSchema,
+  describeCategorySchemaForRepair,
   type WordResult,
   type WordResultContent,
+  type CategoryWordEntry,
 } from "@/lib/ai/schema";
 import {
   WORD_SEARCH_SYSTEM_PROMPT,
   WORD_OF_DAY_SYSTEM_PROMPT,
+  CATEGORY_WORDS_SYSTEM_PROMPT,
   buildWordSearchUserPrompt,
   buildWordOfDayUserPrompt,
+  buildCategoryWordsUserPrompt,
+  buildPracticeWordUserPrompt,
   buildRepairPrompt,
 } from "@/lib/ai/prompts";
 
@@ -29,19 +36,22 @@ function extractJsonObject(raw: string): string {
   return candidate.slice(start, end + 1);
 }
 
-async function completeWithRepair(
+async function completeWithRepair<T>(
   system: string,
-  user: string
-): Promise<WordResultContent> {
+  user: string,
+  schema: z.ZodType<T>,
+  schemaDescription: string,
+  opts?: { temperature?: number }
+): Promise<T> {
   let lastRaw = "";
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const raw =
       attempt === 0
-        ? await provider.complete(system, user)
+        ? await provider.complete(system, user, opts)
         : await provider.complete(
             system,
-            buildRepairPrompt(lastRaw, describeSchemaForRepair())
+            buildRepairPrompt(lastRaw, schemaDescription)
           );
     lastRaw = raw;
 
@@ -53,7 +63,7 @@ async function completeWithRepair(
       continue;
     }
 
-    const result = WordResultContentSchema.safeParse(parsed);
+    const result = schema.safeParse(parsed);
     if (result.success) {
       return result.data;
     }
@@ -75,11 +85,12 @@ function attachProvenance(content: WordResultContent): WordResult {
 
 export async function generateWordResult(input: {
   query: string;
-  categoryHint?: string;
 }): Promise<WordResult> {
   const content = await completeWithRepair(
     WORD_SEARCH_SYSTEM_PROMPT,
-    buildWordSearchUserPrompt(input)
+    buildWordSearchUserPrompt(input),
+    WordResultContentSchema,
+    describeSchemaForRepair()
   );
   return attachProvenance(content);
 }
@@ -87,7 +98,41 @@ export async function generateWordResult(input: {
 export async function generateWordOfDay(dateISO: string): Promise<WordResult> {
   const content = await completeWithRepair(
     WORD_OF_DAY_SYSTEM_PROMPT,
-    buildWordOfDayUserPrompt(dateISO)
+    buildWordOfDayUserPrompt(dateISO),
+    WordResultContentSchema,
+    describeSchemaForRepair()
   );
   return attachProvenance(content);
+}
+
+/**
+ * A fresh random word for unlimited bonus practice (Daily Challenge "Practice
+ * another word") — not cached, not tied to a date, doesn't touch streak or
+ * achievements. Higher temperature so repeated calls don't converge on the
+ * same handful of "safe" picks.
+ */
+export async function generatePracticeWord(
+  exclude: string[] = []
+): Promise<WordResult> {
+  const content = await completeWithRepair(
+    WORD_OF_DAY_SYSTEM_PROMPT,
+    buildPracticeWordUserPrompt(exclude),
+    WordResultContentSchema,
+    describeSchemaForRepair(),
+    { temperature: 0.9 }
+  );
+  return attachProvenance(content);
+}
+
+export async function generateCategoryWords(
+  category: string,
+  count = 12
+): Promise<CategoryWordEntry[]> {
+  const content = await completeWithRepair(
+    CATEGORY_WORDS_SYSTEM_PROMPT,
+    buildCategoryWordsUserPrompt(category, count),
+    CategoryWordListContentSchema,
+    describeCategorySchemaForRepair()
+  );
+  return content.words;
 }
