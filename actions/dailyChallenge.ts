@@ -6,6 +6,8 @@ import { getWordOfDay } from "@/actions/wordOfDay";
 import { syncAchievements } from "@/actions/achievements";
 import { bumpDailyStreak } from "@/lib/streak";
 import { generatePracticeWord } from "@/lib/ai";
+import { checkRateLimit, RateLimitError } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/getClientIp";
 
 function todayDateOnly(): Date {
   const d = new Date();
@@ -20,16 +22,11 @@ function todayDateOnly(): Date {
 export async function getDailyChallenge() {
   const word = await getWordOfDay();
 
-  let solvedToday = false;
-  try {
-    const user = await requireLocalUser();
-    const attempt = await prisma.dailyChallengeAttempt.findUnique({
-      where: { userId_date: { userId: user.id, date: todayDateOnly() } },
-    });
-    solvedToday = attempt?.solved ?? false;
-  } catch {
-    // Anonymous visitor — still playable, just nothing to persist.
-  }
+  const user = await requireLocalUser();
+  const attempt = await prisma.dailyChallengeAttempt.findUnique({
+    where: { userId_date: { userId: user.id, date: todayDateOnly() } },
+  });
+  const solvedToday = attempt?.solved ?? false;
 
   return {
     definition: word.definition,
@@ -89,16 +86,72 @@ export async function revealDailyChallenge() {
  * no auth, no persistence, doesn't touch the streak. Unlike the daily
  * challenge the word ships to the client right away (nothing here is worth
  * hiding server-side), the UI just doesn't render it until solved/revealed.
+ *
+ * Still spends real AI-provider quota per call (unlike the cached category
+ * lists), so it gets the same abuse guard as search — and `exclude` is
+ * client-supplied text that flows into the prompt, so it's bounded before
+ * use rather than trusted verbatim.
  */
-export async function getPracticeWord(exclude: string[] = []) {
-  const word = await generatePracticeWord(exclude);
-  return {
-    word: word.word,
-    definition: word.definition,
-    exampleSentence: word.exampleSentences?.[0] ?? null,
-    partOfSpeech: word.partOfSpeech,
-    wordLength: word.word.length,
-    pronunciation: word.pronunciation,
-    originEtymology: word.originEtymology,
-  };
+export type PracticeWordResult =
+  | {
+      ok: true;
+      word: string;
+      definition: string;
+      exampleSentence: string | null;
+      partOfSpeech: string[];
+      wordLength: number;
+      pronunciation: string;
+      originEtymology: string;
+    }
+  | { ok: false; error: string };
+
+export async function getPracticeWord(
+  exclude: string[] = []
+): Promise<PracticeWordResult> {
+  const userId: string | null = null;
+  const ip = userId ? null : await getClientIp();
+
+  try {
+    await checkRateLimit({ userId, ip });
+  } catch (err) {
+    if (err instanceof RateLimitError) {
+      return { ok: false, error: err.message };
+    }
+    // Rate-limit check depends on the DB; a DB hiccup here shouldn't block
+    // practice — log and fail open instead of blocking the user.
+    console.error("checkRateLimit failed, failing open:", err);
+  }
+
+  const safeExclude = exclude.slice(-20).map((w) => w.slice(0, 40));
+
+  try {
+    const word = await generatePracticeWord(safeExclude);
+
+    prisma.searchQuery
+      .create({
+        data: {
+          userId: userId ?? undefined,
+          ip: ip ?? undefined,
+          queryText: "[practice]",
+          resultWord: word.word,
+        },
+      })
+      .catch(() => {});
+
+    return {
+      ok: true,
+      word: word.word,
+      definition: word.definition,
+      exampleSentence: word.exampleSentences?.[0] ?? null,
+      partOfSpeech: word.partOfSpeech,
+      wordLength: word.word.length,
+      pronunciation: word.pronunciation,
+      originEtymology: word.originEtymology,
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Couldn't find a practice word right now. Please try again.",
+    };
+  }
 }

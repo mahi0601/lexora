@@ -1,21 +1,14 @@
 "use server";
 
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { generateWordResult, AIGenerationError } from "@/lib/ai";
 import { checkRateLimit, RateLimitError } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/getClientIp";
 import type { WordResult } from "@/lib/ai/schema";
 
 export type SearchWordResult =
   | { ok: true; result: WordResult }
   | { ok: false; error: string };
-
-async function getClientIp(): Promise<string | null> {
-  const h = await headers();
-  const forwardedFor = h.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0].trim();
-  return h.get("x-real-ip");
-}
 
 export async function searchWord(query: string): Promise<SearchWordResult> {
   const trimmed = query.trim();
@@ -26,7 +19,8 @@ export async function searchWord(query: string): Promise<SearchWordResult> {
     return { ok: false, error: "That's a bit long — try a shorter phrase." };
   }
 
-  // Clerk auth is temporarily disabled for local dev; treat everyone as anonymous.
+  // Search stays IP-scoped for rate-limiting regardless of who's visiting —
+  // it doesn't need the per-visitor identity My Words/streaks use.
   const userId: string | null = null;
   const ip = userId ? null : await getClientIp();
 

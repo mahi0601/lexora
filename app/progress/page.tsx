@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { LogIn, Flame } from "lucide-react";
+import { Flame } from "lucide-react";
 import { getStreak } from "@/actions/review";
 import { getAchievements } from "@/actions/achievements";
 import { getActivityHeatmap } from "@/actions/progress";
-import { UnauthenticatedError } from "@/lib/getOrCreateUser";
 import { AchievementBadge } from "@/components/progress/achievement-badge";
 import { ActivityHeatmap } from "@/components/progress/activity-heatmap";
 
@@ -12,32 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgressPage() {
-  let streak: Awaited<ReturnType<typeof getStreak>>;
-  let achievements: Awaited<ReturnType<typeof getAchievements>>;
-  let heatmap: Awaited<ReturnType<typeof getActivityHeatmap>>;
-
-  try {
-    [streak, achievements, heatmap] = await Promise.all([
-      getStreak(),
-      getAchievements(),
-      getActivityHeatmap(),
-    ]);
-  } catch (err) {
-    if (err instanceof UnauthenticatedError) {
-      return (
-        <main id="main-content" className="mx-auto max-w-2xl px-4 py-16">
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-border bg-card p-10 text-center">
-            <LogIn className="size-6 text-muted-foreground" aria-hidden="true" />
-            <h1 className="text-lg font-semibold text-foreground">Sign in required</h1>
-            <p className="text-sm text-muted-foreground">
-              Sign in to see your streak, badges, and review history.
-            </p>
-          </div>
-        </main>
-      );
-    }
-    throw err;
-  }
+  const [streak, achievements, heatmap] = await Promise.all([
+    getStreak(),
+    getAchievements(),
+    getActivityHeatmap(),
+  ]);
 
   return (
     <main id="main-content" className="mx-auto max-w-3xl px-4 py-12">

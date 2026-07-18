@@ -48,7 +48,7 @@ export function WordActions({ result }: { result: WordResult }) {
       const res = await toggleFavoriteFromResult(result);
       setFavorited(res.isFavorite);
     } catch {
-      setFavoriteNote("Sign in to save");
+      setFavoriteNote("Couldn't save — try again");
       setTimeout(() => setFavoriteNote(null), 1500);
     }
   }

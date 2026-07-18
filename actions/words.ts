@@ -96,6 +96,9 @@ export async function addCustomWord(input: {
   if (!word || !definition) {
     return { ok: false as const, error: "Word and definition are required." };
   }
+  if (word.length > 100 || definition.length > 1000) {
+    return { ok: false as const, error: "Word or definition is too long." };
+  }
 
   const data: WordResult = {
     word,

@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, CheckCircle2, Shuffle } from "lucide-react";
+import { Sparkles, CheckCircle2, Shuffle, Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetCard } from "@/components/widget/widget-card";
 import {
   getDailyChallenge,
   submitDailyChallengeGuess,
@@ -14,7 +15,8 @@ import {
 
 type Clue = Awaited<ReturnType<typeof getDailyChallenge>>;
 type Solution = Awaited<ReturnType<typeof revealDailyChallenge>>;
-type PracticeWord = Awaited<ReturnType<typeof getPracticeWord>>;
+type PracticeWordResult = Awaited<ReturnType<typeof getPracticeWord>>;
+type PracticeWord = Extract<PracticeWordResult, { ok: true }>;
 
 function PuzzlePrompt({
   partOfSpeech,
@@ -56,6 +58,8 @@ export function DailyChallengeCard() {
   const [practiceSolved, setPracticeSolved] = React.useState(false);
   const [practiceLoading, setPracticeLoading] = React.useState(false);
   const [practiceCount, setPracticeCount] = React.useState(0);
+  const [practiceError, setPracticeError] = React.useState<string | null>(null);
+  const [showWidget, setShowWidget] = React.useState(false);
   const seenWords = React.useRef<string[]>([]);
 
   React.useEffect(() => {
@@ -99,12 +103,17 @@ export function DailyChallengeCard() {
 
   async function loadPractice() {
     setPracticeLoading(true);
-    const word = await getPracticeWord(seenWords.current);
-    seenWords.current.push(word.word);
-    setPractice(word);
-    setPracticeGuess("");
-    setPracticeWrong(0);
-    setPracticeSolved(false);
+    setPracticeError(null);
+    const res = await getPracticeWord(seenWords.current);
+    if (res.ok) {
+      seenWords.current.push(res.word);
+      setPractice(res);
+      setPracticeGuess("");
+      setPracticeWrong(0);
+      setPracticeSolved(false);
+    } else {
+      setPracticeError(res.error);
+    }
     setPracticeLoading(false);
   }
 
@@ -166,6 +175,15 @@ export function DailyChallengeCard() {
                 Revealing doesn&apos;t count toward your streak — come back tomorrow to guess fresh.
               </p>
             )}
+
+            <button
+              type="button"
+              onClick={() => setShowWidget((v) => !v)}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent-foreground underline-offset-4 hover:underline"
+            >
+              <ImageIcon className="size-3.5" aria-hidden="true" />
+              {showWidget ? "Hide widget" : "Get as widget"}
+            </button>
           </>
         ) : (
           <>
@@ -206,17 +224,23 @@ export function DailyChallengeCard() {
         )}
       </section>
 
+      {solution && showWidget && (
+        <WidgetCard word={solution.word} definition={solution.definition} />
+      )}
+
       {solution && !practice && (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={loadPractice}
-          disabled={practiceLoading}
-          className="self-center"
-        >
-          <Shuffle className="size-4" aria-hidden="true" />
-          {practiceLoading ? "Finding a word…" : "Practice another word"}
-        </Button>
+        <div className="flex flex-col items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={loadPractice}
+            disabled={practiceLoading}
+          >
+            <Shuffle className="size-4" aria-hidden="true" />
+            {practiceLoading ? "Finding a word…" : "Practice another word"}
+          </Button>
+          {practiceError && <p className="text-sm text-destructive">{practiceError}</p>}
+        </div>
       )}
 
       {practice && (
@@ -245,6 +269,9 @@ export function DailyChallengeCard() {
                 <Shuffle className="size-4" aria-hidden="true" />
                 {practiceLoading ? "Finding a word…" : "Next word"}
               </Button>
+              {practiceError && (
+                <p className="mt-2 text-sm text-destructive">{practiceError}</p>
+              )}
             </>
           ) : (
             <>

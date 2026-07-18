@@ -58,11 +58,12 @@ export function CollectionsPanel() {
         <ul className="flex flex-col gap-1.5">
           {collections.map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-2 text-sm">
-              <span className="text-foreground">{c.name}</span>
+              <span className="min-w-0 truncate text-foreground">{c.name}</span>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
+                className="shrink-0"
                 onClick={() => handleShare(c.id, Boolean(c.shareToken))}
               >
                 {copiedId === c.id ? (

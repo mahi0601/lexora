@@ -60,7 +60,7 @@ export function QuizSession({ questions }: { questions: QuizQuestion[] }) {
               onClick={() => choose(option)}
               disabled={selected !== null}
               className={cn(
-                "flex items-center justify-between gap-3 rounded-full border-2 border-foreground bg-card px-5 py-3 text-left text-sm font-medium transition-colors duration-150",
+                "flex items-center justify-between gap-3 rounded-lg border-2 border-foreground bg-card px-5 py-3 text-left text-sm font-medium transition-colors duration-150",
                 !selected && "hover:bg-muted",
                 selected && isCorrect && "border-success bg-success/10",
                 selected && isPicked && !isCorrect && "border-destructive bg-destructive/10"

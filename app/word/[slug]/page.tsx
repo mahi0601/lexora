@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { generateWordResult, AIGenerationError } from "@/lib/ai";
 import { ResultCard } from "@/components/results/result-card";
+import { WidgetCard } from "@/components/widget/widget-card";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -20,8 +21,9 @@ export default async function WordPage({ params }: Props) {
   try {
     const result = await generateWordResult({ query });
     return (
-      <main id="main-content" className="px-4 py-16">
+      <main id="main-content" className="flex flex-col gap-10 px-4 py-16">
         <ResultCard result={result} />
+        <WidgetCard word={result.word} definition={result.definition} />
       </main>
     );
   } catch (err) {
