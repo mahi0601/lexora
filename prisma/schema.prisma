@@ -28,6 +28,12 @@ model User {
   longestStreak  Int       @default(0)
   lastReviewedAt DateTime? @db.Date
 
+  // Set on request only (via "Back up your words"), so someone can move to
+  // a new browser/device without a real account. Whoever enters the code
+  // gets treated as this same anonymous user going forward — a recovery
+  // convenience, not real authentication.
+  recoveryCode String? @unique
+
   savedWords        SavedWord[]
   collections       Collection[]
   reviewLogs        ReviewLog[]

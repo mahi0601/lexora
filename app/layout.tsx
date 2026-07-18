@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +45,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider delay={200}>
-            <div className="relative isolate min-h-svh overflow-x-hidden">
+            <div className="relative isolate flex min-h-svh flex-col overflow-x-hidden">
               <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -53,6 +54,7 @@ export default function RootLayout({
               </a>
               <SiteHeader />
               {children}
+              <SiteFooter />
             </div>
           </TooltipProvider>
         </ThemeProvider>

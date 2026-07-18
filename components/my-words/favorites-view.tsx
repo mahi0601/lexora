@@ -6,6 +6,8 @@ import { WordFilters } from "@/components/my-words/word-filters";
 import { SavedWordCard } from "@/components/my-words/saved-word-card";
 import { CollectionsPanel } from "@/components/my-words/collections-panel";
 import { AddWordForm } from "@/components/my-words/add-word-form";
+import { RecoveryPanel } from "@/components/my-words/recovery-panel";
+import { DeleteAllData } from "@/components/my-words/delete-all-data";
 import type { listWords, listCollections } from "@/actions/words";
 
 type Words = Awaited<ReturnType<typeof listWords>>;
@@ -30,6 +32,7 @@ export function FavoritesView({
 
   return (
     <div className="flex flex-col gap-6">
+      <RecoveryPanel />
       <CollectionsPanel />
       <AddWordForm />
       <WordFilters />
@@ -42,6 +45,7 @@ export function FavoritesView({
           ))}
         </div>
       )}
+      <DeleteAllData />
     </div>
   );
 }

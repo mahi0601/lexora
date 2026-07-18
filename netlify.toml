@@ -1,5 +1,9 @@
 [build]
-  command = "npm run build"
+  # Applies any pending Prisma migrations before every deploy, so the schema
+  # is never out of sync with the code being built. Requires DATABASE_URL to
+  # be set as a Netlify build-time env var (Site settings > Environment
+  # variables), not just a runtime one.
+  command = "npx prisma migrate deploy && npm run build"
   publish = ".next"
 
 [[plugins]]
